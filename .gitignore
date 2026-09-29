@@ -1,0 +1,14 @@
+# 编译产物
+blackhole
+blackhole.exe
+main.exe
+
+# VHS 输出的 GIF 图片
+assets/*.gif
+
+# VSCode 缓存
+.vscode/
+*.log
+
+# 开发临时文件
+_dev/

@@ -1,50 +1,75 @@
-# blackhole.c-
- gargantua.c 是一个单文件、零依赖的纯 C 语言终端天体物理渲染器。无需任何图形库，仅凭标准库与纯数学推演，即可在字符终端中以 60 FPS 实时呈现《星际穿越》般的史瓦西黑洞。 它拒绝“贴图伪造”：每条光线均严格沿着广义相对论的零测地线方程进行数值积分。引力透镜弯折光线、光子球、爱因斯坦环，以及“黑洞上下方同时看到吸积盘”的奇观，皆是物理定律的自然涌现；结合 Shakura-Sunyaev 模型、相对论多普勒效应与引力红移，呈现出瑰丽的 ANSI 24 位真彩渐变。 底层采用双缓冲技术彻底杜绝终端闪烁，并支持窗口实时缩放。只需一行 gcc -O3 main.c -lm，即可在纯黑的命令行中见证属于程序员的时空浪漫。
+# Blackhole Raymarching Renderer
 
+纯 C 语言实现的黑洞光线追踪渲染器，基于测地线积分模拟黑洞周围的时空弯曲与吸积盘光影效果。
 
-# 🕳️ Schwarzschild Black Hole in Terminal (Pure C)
+## ✨ 特性
 
-[![Language](https://img.shields.io/badge/language-C99-blue.svg)](https://en.wikipedia.org/wiki/C99)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](#)
-[![FPS](https://img.shields.io/badge/framerate-60%20FPS%20Flicker--Free-orange.svg)](#)
+- 测地线积分实时模拟光线在黑洞附近时空中的弯曲
+- 可调参数（帧率、积分步数、观察距离、最内稳定轨道等）
+- 吸积盘光影与公转动画
+- 附带 VHS 脚本，一键生成 60 帧无损演示 GIF
 
-A single-file, zero-dependency, real-time raytraced Schwarzschild black hole rendered inside your text terminal using ANSI 24-bit TrueColor.
+## 🚀 快速开始（克隆后直接运行黑洞渲染）
 
-![Schwarzschild Black Hole Demo](assets/demo.gif)
+### 1. 运行黑洞射线追踪渲染程序
 
-> *"Photons are not faked: every ray is integrated along a null geodesic of the Schwarzschild metric."*
-
----
-
-## ✨ Highlights
-
-- **Pure General Relativity**: Solves the null geodesic equation of motion:
-  $$\frac{d^2u}{d\phi^2} = -u + \frac{3}{2} R_s u^2 \quad (u = 1/r)$$
-  The event-horizon shadow, Einstein ring, photon ring, and the iconic accretion disk appearing both above and below the horizon emerge purely from spacetime curvature.
-- **Relativistic Astrophysics**:
-  - **Shakura-Sunyaev** accretion disk temperature profile ($T(r) \propto r^{-3/4}$).
-  - **Relativistic Doppler Beaming**: Disk rotation causes the approaching side to flare bright cyan/white, while the receding side reddens and dims.
-  - **Gravitational Redshift**: Light climbing out of the gravitational well loses energy.
-- **Extreme Terminal Optimization**:
-  - **Zero Flicker**: Employs double buffering; builds the full frame in heap memory and pushes it in a single `fwrite()` per frame.
-  - **Zero Trig in Hot Loops**: Eliminates per-step `sin()` and `cos()` calls through incremental basis rotation.
-  - **No `sprintf` Overhead**: Custom fast integer-to-decimal encoder (`put_u8`) for ANSI escape formatting.
-  - **Color Deduplication**: Reuses escape sequences for identical consecutive cells, drastically reducing I/O throughput.
-  - **Live Window Resize**: Real-time geometry tracking via `TIOCGWINSZ` (POSIX) / `GetConsoleScreenBufferInfo` (Win32).
-  - **Clean Signal Handling**: Gracefully restores cursor and color palette on `Ctrl+C`.
-
----
-
-## 🚀 Quick Start
-
-### Requirements
-- A terminal supporting **24-bit TrueColor** (Windows Terminal, iTerm2, Alacritty, Kitty, VS Code Terminal, WezTerm, etc.).
-- Standard C compiler (`gcc`, `clang`, or `MSVC`).
-
-### Build & Run
-
-**Linux / macOS / MSYS2:**
 ```bash
+# 编译
 gcc -O3 main.c -lm -o blackhole
+
+# 运行（启动黑洞渲染动画，按 Ctrl+C 退出）
 ./blackhole
+```
+
+> **依赖环境**：需要 gcc 编译器。
+> - Windows：推荐使用 **Git Bash / MinGW / WSL**
+> - Linux / macOS：系统自带 gcc，直接执行即可
+
+### 2. 生成演示 GIF（需要额外安装 VHS）
+
+`demo.tape` 是 [VHS](https://github.com/charmbracelet/vhs) 的录制脚本，用于自动录制终端画面并输出 GIF。**如果你只想看黑洞渲染动画，不需要安装 VHS，直接执行上面的编译运行即可。**
+
+```bash
+# 安装 VHS（一次性）
+# 参考：https://github.com/charmbracelet/vhs
+
+# 执行录制脚本，生成 60 帧 GIF
+vhs demo.tape
+```
+
+生成的 GIF 输出到 `assets/demo.gif`。
+
+> ⚠️ **Windows 注意**：`demo.tape` 中使用了 `Set Shell "bash"`，请使用 **Git Bash 或 WSL** 环境运行，PowerShell 直接执行会报错。
+
+## 🔭 控制与调校
+
+参数可以在可调变量节 `main.c` 中修改：
+
+| 参数 | 默认值 | 描述 |
+| --- | --- | --- |
+| `FPS_TARGET` | `60.0` | 目标帧率 |
+| `MAX_STEPS` | `420` | 每射线测地线积分步数 |
+| `DPHI` | `0.030f` | 角积分步（rad） |
+| `CAM_DIST` | `26.0 * RS` | 观察者距离奇点的距离 |
+| `R_ISCO` | `3.0 * RS` | 最内稳定的圆形轨道 |
+
+## 📦 编译说明
+
+- `-O3`：最高级别优化，提升渲染速度
+- `-lm`：链接数学库（射线追踪大量使用数学函数，**必须加**，否则编译失败）
+
+## 📁 项目结构
+
+```
+├── main.c          # 黑洞射线追踪渲染主程序
+├── demo.tape       # VHS 录制脚本（生成演示 GIF）
+├── LICENSE         # MIT 许可证
+├── assets/         # 存放生成的 GIF
+└── .gitignore      # Git 忽略规则
+```
+
+## 📜 许可
+
+本项目基于 MIT 许可证发布，欢迎随时使用、修改和分享。
+
+详见 [LICENSE](./LICENSE)。

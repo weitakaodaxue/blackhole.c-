@@ -1,75 +1,62 @@
 # Blackhole Raymarching Renderer
-
-纯 C 语言实现的黑洞光线追踪渲染器，基于测地线积分模拟黑洞周围的时空弯曲与吸积盘光影效果。
+纯 C 语言实现的黑洞射线追踪渲染器，利用**测地线积分**模拟黑洞附近时空弯曲，还原引力透镜效应与吸积盘动态光影。
 
 ## ✨ 特性
+- 基于测地线积分，实时模拟光线在弯曲时空中的传播与引力透镜效果
+- 可自定义渲染参数：帧率、积分步数、观测距离、ISCO最内稳定圆轨道等
+- 动态吸积盘与公转动画，终端 ASCII 字符渲染
+- 内置 VHS 自动化录制脚本，一键导出 60fps 高清演示 GIF
 
-- 测地线积分实时模拟光线在黑洞附近时空中的弯曲
-- 可调参数（帧率、积分步数、观察距离、最内稳定轨道等）
-- 吸积盘光影与公转动画
-- 附带 VHS 脚本，一键生成 60 帧无损演示 GIF
-
-## 🚀 快速开始（克隆后直接运行黑洞渲染）
-
-### 1. 运行黑洞射线追踪渲染程序
-
+## 🚀 快速开始
+> 克隆仓库后，只需 GCC 编译器即可直接运行黑洞渲染，**无需任何第三方图形库**
+### 1. 编译并运行黑洞渲染
 ```bash
-# 编译
+# 编译（-O3开启最高优化，-lm链接数学库，不可省略）
 gcc -O3 main.c -lm -o blackhole
-
-# 运行（启动黑洞渲染动画，按 Ctrl+C 退出）
+# 启动终端黑洞动画，Ctrl+C 退出程序
 ./blackhole
 ```
+**环境依赖**
+- Windows：推荐 Git Bash / MinGW / WSL（PowerShell 不推荐直接运行）
+- Linux / macOS：系统自带 GCC，开箱即用
 
-> **依赖环境**：需要 gcc 编译器。
-> - Windows：推荐使用 **Git Bash / MinGW / WSL**
-> - Linux / macOS：系统自带 gcc，直接执行即可
-
-### 2. 生成演示 GIF（需要额外安装 VHS）
-
-`demo.tape` 是 [VHS](https://github.com/charmbracelet/vhs) 的录制脚本，用于自动录制终端画面并输出 GIF。**如果你只想看黑洞渲染动画，不需要安装 VHS，直接执行上面的编译运行即可。**
-
+### 2. 自动生成演示 GIF（可选）
+> 仅当你需要制作项目预览动图时才需要安装 VHS；单纯运行黑洞动画不需要这个工具。
+`demo.tape` 是 [VHS](https://github.com/charmbracelet/vhs) 终端录制脚本，自动录制终端画面输出 GIF。
 ```bash
-# 安装 VHS（一次性）
-# 参考：https://github.com/charmbracelet/vhs
-
-# 执行录制脚本，生成 60 帧 GIF
+# 安装 VHS，参考官方仓库：https://github.com/charmbracelet/vhs
+# 执行录制脚本，输出 60fps GIF
 vhs demo.tape
 ```
+生成文件路径：`assets/demo.gif`
 
-生成的 GIF 输出到 `assets/demo.gif`。
+> ⚠️ Windows 提示：脚本指定 `Set Shell "bash"`，必须在 Git Bash / WSL 内执行，原生 PowerShell 会执行失败。
 
-> ⚠️ **Windows 注意**：`demo.tape` 中使用了 `Set Shell "bash"`，请使用 **Git Bash 或 WSL** 环境运行，PowerShell 直接执行会报错。
-
-## 🔭 控制与调校
-
-参数可以在可调变量节 `main.c` 中修改：
-
+## 🔭 参数调校
+在 `main.c` 头部修改下述参数，调整黑洞渲染效果与性能：
 | 参数 | 默认值 | 描述 |
 | --- | --- | --- |
-| `FPS_TARGET` | `60.0` | 目标帧率 |
-| `MAX_STEPS` | `420` | 每射线测地线积分步数 |
-| `DPHI` | `0.030f` | 角积分步（rad） |
-| `CAM_DIST` | `26.0 * RS` | 观察者距离奇点的距离 |
-| `R_ISCO` | `3.0 * RS` | 最内稳定的圆形轨道 |
+| `FPS_TARGET` | `60.0` | 渲染目标帧率 |
+| `MAX_STEPS` | `420` | 单条光线测地线积分最大步数（数值越高精度越高，渲染越慢） |
+| `DPHI` | `0.030f` | 角积分步长，单位 rad（弧度） |
+| `CAM_DIST` | `26.0 * RS` | 观测相机距离黑洞奇点的距离 |
+| `R_ISCO` | `3.0 * RS` | 黑洞最内稳定圆轨道半径 |
 
-## 📦 编译说明
-
-- `-O3`：最高级别优化，提升渲染速度
-- `-lm`：链接数学库（射线追踪大量使用数学函数，**必须加**，否则编译失败）
+## 📦 编译参数说明
+- `-O3`：GCC最高级别编译优化，大幅提升渲染速度
+- `-lm`：链接数学库，项目大量使用三角函数与浮点运算，**该参数不可省略，否则编译报错**
 
 ## 📁 项目结构
-
 ```
-├── main.c          # 黑洞射线追踪渲染主程序
-├── demo.tape       # VHS 录制脚本（生成演示 GIF）
-├── LICENSE         # MIT 许可证
-├── assets/         # 存放生成的 GIF
-└── .gitignore      # Git 忽略规则
+├── main.c          # 黑洞射线追踪主代码（测地线积分核心）
+├── demo.tape       # VHS 终端录制脚本，用于生成演示GIF
+├── LICENSE         # MIT开源许可证
+├── assets/         # 存放 VHS 导出的GIF文件
+│   └── .gitkeep    # Git占位文件，保留空目录
+└── .gitignore      # Git忽略配置，过滤编译产物与生成的GIF
 ```
 
-## 📜 许可
-
-本项目基于 MIT 许可证发布，欢迎随时使用、修改和分享。
-
-详见 [LICENSE](./LICENSE)。
+## 📜 License
+This project is released under the MIT License.
+欢迎自由使用、修改、分发、二次开发。
+完整协议请看 [LICENSE](./LICENSE) 文件。

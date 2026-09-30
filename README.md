@@ -1,9 +1,3 @@
-为你重构并美化了这篇 README.md。
-
-本次美化加入了 Shields 极客徽章、居中排版、GitHub 原生高亮区块（Alerts）、LaTeX 相对论数学公式、清晰的模块划分与 Emoji
-视觉指引，排版达到 GitHub Trending 爆款项目的工业级水准。
-
-你可以直接全选并覆盖粘贴到仓库的 README.md 中：
 
 <div align="center">
 
